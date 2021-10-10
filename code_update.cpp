@@ -232,13 +232,14 @@ bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_char
    float remaining_service_time = 0.0;
    int current_cpu_consecutive_idle_time = 0;
    int max_cpu_consecutive_idle_time = 0;
-  
+   //float quantas = 0.0;
    vector<vector<process> >priority_queue(4);
    vector<vector<process> > complete_process_list(4);
  
  
    for(int quanta=0; true ; ++quanta)
   {
+      //quantas++;
       while(quanta<100 && process_index < process_list.size() && process_list[process_index].arrival_time <= quanta)
       {
           priority_queue[process_list[process_index].priority-1].push_back(process_list[process_index]);
@@ -290,6 +291,7 @@ bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_char
         workloads = complete_process_list;
     }
   }
+  //process_list[ 0 ].metrics.total_quanta = quantas;
   return max_cpu_consecutive_idle_time < 2 ? true : false;
 }  
  
@@ -299,12 +301,13 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
   int process_index = 0;
   int current_cpu_consecutive_idle_time = 0;
   int max_cpu_consecutive_idle_time = 0;
+  //float quantas = 0.0;
    // Initialize queue populated with sorted process list.
   queue<process> requestQueue;
   vector<process> metric_list;
   // Run round robin until all processes are completed or the quanta is greater than or equal 100.
   while(timeQuanta < 100 || !requestQueue.empty()){
-    
+      //quantas++;
       while (process_index < process_list.size() && process_list[process_index].arrival_time <= timeQuanta && timeQuanta < 100){
           requestQueue.push(process_list[process_index]);
           (requestQueue.front()).metrics.response_time = timeQuanta - (requestQueue.front()).arrival_time;
@@ -354,6 +357,7 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
       workloads.push_back(metric_list);
   }
   // Returns whether cpu consecutive idle time exceeds 2.
+  //process_list[ 0 ].metrics.total_quanta = quantas;
   return max_cpu_consecutive_idle_time < 2 ? true : false;
 }
  
@@ -363,8 +367,10 @@ bool firstComeFirstServe(vector<process> &process_list, vector<char> &time_chart
    bool process_started = false;
    int current_cpu_consecutive_idle_time = 0;
    int max_cpu_consecutive_idle_time = 0;
+   float quantas = 0.0;
    for(int quanta=0; true; ++quanta)
    {
+       quantas++;
        if(process_started == false)
        {
            if(quanta >= 100) break;
@@ -398,6 +404,7 @@ bool firstComeFirstServe(vector<process> &process_list, vector<char> &time_chart
            max_cpu_consecutive_idle_time = max(max_cpu_consecutive_idle_time, current_cpu_consecutive_idle_time);
        }
    }
+   process_list[ 0 ].metrics.total_quanta = quantas;
    return max_cpu_consecutive_idle_time < 2 ? true : false;
 }
  
