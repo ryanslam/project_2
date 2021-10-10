@@ -339,6 +339,7 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
             else{
                 // Update the turnaround and waiting time.
                 //   cout << (requestQueue.front().job_start_time) << endl;
+                (requestQueue.front()).metrics.total_quanta = timeQuanta;
                 (requestQueue.front()).metrics.turnaround_time = timeQuanta - (requestQueue.front().job_start_time);
                 (requestQueue.front()).metrics.waiting_time = (requestQueue.front()).metrics.turnaround_time - (requestQueue.front()).service_time;
                 (requestQueue.front()).metrics.end_time = timeQuanta;
@@ -353,7 +354,8 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
         }
         timeQuanta++;
     }
-    (requestQueue.front()).metrics.total_quanta = timeQuanta;
+    
+    
     if(max_cpu_consecutive_idle_time < 2){
         workloads.push_back(metric_list);
     }
