@@ -28,7 +28,7 @@ class performance_metrics
       response_time = 0.0;
       turnaround_time = 0.0;
       waiting_time = 0.0;
-      total_quanta = -1.0;
+      total_quanta = 1.0;
       start_time = 0.0;
       end_time = 0.0;
   }
@@ -191,7 +191,7 @@ void calculateAndPrintPerformanceMetrics( vector<vector<process> > &workloads)
   cout << "Average Turnaround Time : " << avg_turnaround_time/workloads.size() << endl;
   cout << "Average Waiting Time : " << avg_waiting_time/workloads.size() << endl;
   cout << "Average Response Time : " << avg_response_time/workloads.size() << endl;
-  cout << "Average Throughput :" << avg_throughput/workloads.size() << endl;
+  cout << "Average Throughput : " << avg_throughput/workloads.size() << endl;
 
 }
  
@@ -297,68 +297,69 @@ bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_char
  
 // Round Robin Scheduling Algorithm Implementation.
 bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vector<vector<process> > &workloads){
-  int timeQuanta = 0;
-  int process_index = 0;
-  int current_cpu_consecutive_idle_time = 0;
-  int max_cpu_consecutive_idle_time = 0;
-  //float quantas = 0.0;
-   // Initialize queue populated with sorted process list.
-  queue<process> requestQueue;
-  vector<process> metric_list;
-  // Run round robin until all processes are completed or the quanta is greater than or equal 100.
-  while(timeQuanta < 100 || !requestQueue.empty()){
-      //quantas++;
-      while (process_index < process_list.size() && process_list[process_index].arrival_time <= timeQuanta && timeQuanta < 100){
-          requestQueue.push(process_list[process_index]);
-          (requestQueue.front()).metrics.response_time = timeQuanta - (requestQueue.front()).arrival_time;
-          process_index++;
-      }
-      // If there are still processes, run the processes and update the values.
-      if(!requestQueue.empty()){
-          if((requestQueue.front()).remaining_service_time == (requestQueue.front()).service_time){
-              (requestQueue.front()).job_start_time = timeQuanta;    
-              (requestQueue.front()).metrics.start_time = timeQuanta;  
-          }
-      }
+    int timeQuanta = 0;
+    int process_index = 0;
+    int current_cpu_consecutive_idle_time = 0;
+    int max_cpu_consecutive_idle_time = 0;
+    //float quantas = 0.0;
+    // Initialize queue populated with sorted process list.
+    queue<process> requestQueue;
+    vector<process> metric_list;
+    // Run round robin until all processes are completed or the quanta is greater than or equal 100.
+    while(timeQuanta < 100 || !requestQueue.empty()){
+        //quantas++;
+        while (process_index < process_list.size() && process_list[process_index].arrival_time <= timeQuanta && timeQuanta < 100){
+            requestQueue.push(process_list[process_index]);
+            (requestQueue.front()).metrics.response_time = timeQuanta - (requestQueue.front()).arrival_time;
+            process_index++;
+        }
+        // If there are still processes, run the processes and update the values.
+        if(!requestQueue.empty()){
+            if((requestQueue.front()).remaining_service_time == (requestQueue.front()).service_time){
+                (requestQueue.front()).job_start_time = timeQuanta;    
+                (requestQueue.front()).metrics.start_time = timeQuanta;  
+            }
+        }
+        
+        // Reduce the service time by 1 quanta
+        if(!requestQueue.empty()){
+            (requestQueue.front()).remaining_service_time = max((float)0, (requestQueue.front()).remaining_service_time-1);
+            time_chart.push_back(requestQueue.front().process_name);
+        
+        
+            // Check if the process needs to be placed at the back of the queue.
+            if((requestQueue.front()).remaining_service_time > 0){
+                // If it hasn't been completed, push the process back into the queue.          
+                process tmp = requestQueue.front();
+                requestQueue.pop();
+                requestQueue.push(tmp);
+                // Reset CPU consecutive idle time.
+                current_cpu_consecutive_idle_time = 0;
+            }
+            else{
+                // Update the turnaround and waiting time.
+                //   cout << (requestQueue.front().job_start_time) << endl;
+                (requestQueue.front()).metrics.turnaround_time = timeQuanta - (requestQueue.front().job_start_time);
+                (requestQueue.front()).metrics.waiting_time = (requestQueue.front()).metrics.turnaround_time - (requestQueue.front()).service_time;
+                (requestQueue.front()).metrics.end_time = timeQuanta;
+                metric_list.push_back(requestQueue.front());
+                requestQueue.pop();
+            }
+        }
+        else{
+            time_chart.push_back('-');
+            ++current_cpu_consecutive_idle_time;
+            max_cpu_consecutive_idle_time = max(max_cpu_consecutive_idle_time, current_cpu_consecutive_idle_time);
+        }
+        timeQuanta++;
+    }
+    (requestQueue.front()).metrics.total_quanta = timeQuanta;
+    if(max_cpu_consecutive_idle_time < 2){
+        workloads.push_back(metric_list);
+    }
+    // Returns whether cpu consecutive idle time exceeds 2.
     
-      // Reduce the service time by 1 quanta
-      if(!requestQueue.empty()){
-          (requestQueue.front()).remaining_service_time = max((float)0, (requestQueue.front()).remaining_service_time-1);
-          time_chart.push_back(requestQueue.front().process_name);
-    
-    
-          // Check if the process needs to be placed at the back of the queue.
-          if((requestQueue.front()).remaining_service_time > 0){
-              // If it hasn't been completed, push the process back into the queue.          
-              process tmp = requestQueue.front();
-              requestQueue.pop();
-              requestQueue.push(tmp);
-              // Reset CPU consecutive idle time.
-              current_cpu_consecutive_idle_time = 0;
-          }
-          else{
-              // Update the turnaround and waiting time.
-            //   cout << (requestQueue.front().job_start_time) << endl;
-              (requestQueue.front()).metrics.turnaround_time = timeQuanta - (requestQueue.front().job_start_time);
-              (requestQueue.front()).metrics.waiting_time = (requestQueue.front()).metrics.turnaround_time - (requestQueue.front()).service_time;
-              (requestQueue.front()).metrics.end_time = timeQuanta;
-              metric_list.push_back(requestQueue.front());
-              requestQueue.pop();
-          }
-      }
-      else{
-          time_chart.push_back('-');
-          ++current_cpu_consecutive_idle_time;
-          max_cpu_consecutive_idle_time = max(max_cpu_consecutive_idle_time, current_cpu_consecutive_idle_time);
-      }
-      timeQuanta++;
-  }
-  if(max_cpu_consecutive_idle_time < 2){
-      workloads.push_back(metric_list);
-  }
-  // Returns whether cpu consecutive idle time exceeds 2.
-  //process_list[ 0 ].metrics.total_quanta = quantas;
-  return max_cpu_consecutive_idle_time < 2 ? true : false;
+    return max_cpu_consecutive_idle_time < 2 ? true : false;
 }
  
 bool firstComeFirstServe(vector<process> &process_list, vector<char> &time_chart)
