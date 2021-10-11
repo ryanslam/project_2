@@ -7,6 +7,7 @@
 #include <float.h>
 #include <algorithm>
 #include <math.h>
+#include <climits>
 // #include <bits/stdc++.h>
 using namespace std;
  
@@ -514,6 +515,80 @@ bool shortestJobFirst( vector<process> &process_list, vector<char> &time_chart )
 	return true;
 }
 
+bool shortestRemainingTime(vector<process> &process_list, vector<char> &time_chart) {
+    vector<int> runnable;
+    int processes_completed = 0;
+    int consecutive_idles = 0;
+    for(int quanta = 0; quanta < 100 || processes_completed != process_list.size(); quanta++) {
+        process_list[0].metrics.total_quanta = quanta;
+        runnable.clear();
+        int not_started = 0;
+        for(int i = 0; i < process_list.size(); i++) {
+            if(process_list[i].arrival_time <= quanta) {
+                if(process_list[i].job_started == false) {
+                    not_started++;
+                }
+                if(process_list[i].remaining_service_time > 0) {
+                    runnable.push_back(i);
+                }
+                // runnable.push_back(i);
+            }
+            else {
+                break;
+            }
+        }
+
+        if(quanta >= 100 && not_started == runnable.size()) {
+            break;
+        }
+
+        if(runnable.size() == 0) {
+            // cout << "quanta " << quanta << ": -" << endl;
+            time_chart.push_back('-');
+            consecutive_idles++;
+            if(consecutive_idles > 2) {
+                return false;
+            }
+        }
+        else {
+            consecutive_idles = 0;
+            int shortest_remaining_time = INT_MAX;
+            int shortest_index = -1;
+            for(int i = 0; i < runnable.size(); i++) {
+                int index = runnable[i];
+                if(process_list[index].remaining_service_time < shortest_remaining_time) {
+                    shortest_remaining_time = process_list[index].remaining_service_time;
+                    shortest_index = index;
+                }
+            }
+
+            // PROCESS TO RUN IS CHOSE HERE
+            process* chosen_process = &process_list[shortest_index];
+            time_chart.push_back(chosen_process->process_name);
+            // CHECK IF THIS IS THE FIRST TIME RUNNING THE PROCESS
+            // IF IT IS THEN RESPONSE TIME = CURRENT QUANTA - ARRIVAL TIME
+            if(chosen_process->job_started == false) {
+                chosen_process->metrics.response_time = quanta - chosen_process->arrival_time;
+                chosen_process->metrics.start_time = quanta;
+                chosen_process->job_started = true;
+            }
+            chosen_process->remaining_service_time--;
+            // cout << "quanta " << quanta << ": " << chosen_process->process_name << endl;
+
+            if(chosen_process->remaining_service_time <= 0) {
+                chosen_process->metrics.end_time = quanta+1;
+                // TURNAROUND TIME = CURRENT QUANTA - ARRIVAL TIME
+                chosen_process->metrics.turnaround_time = quanta+1 - chosen_process->arrival_time;
+                // WAITING TIME = TURNAROUND TIME - SERVICE TIME
+                chosen_process->metrics.waiting_time = chosen_process->metrics.turnaround_time - chosen_process->service_time;
+                processes_completed++;
+                // process_list.erase(process_list.begin() + shortest_index);
+            }
+        }
+    }
+    return true;
+}
+
 int main()
 {
   cout << "Choose One of the Process Scheduling Algorithm:" << endl;
@@ -590,6 +665,31 @@ int main()
                }
                calculateAndPrintPerformanceMetrics(workloads);
                break;
+        case 3: while(successful_count < 5)
+                {
+                    createProcessList(process_list, unsuccessful_count*2);
+                   time_chart.clear();
+                   successful = shortestJobFirst(process_list, time_chart);                  
+                  
+                   if(!successful)
+                   {
+                    //    cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
+                    //    printTimeChart(time_chart);
+                       ++unsuccessful_count;
+                   }
+                   else
+                   {
+                       ++successful_count;
+                       cout << "Simulation successful." << endl;
+                       printProcessList(process_list);
+                       printTimeChart(time_chart);
+                       cout << "Processes Executed: " << endl;
+                       postPrintProcessList(process_list);
+                       workloads.push_back(process_list);
+                   }
+                }
+                calculateAndPrintPerformanceMetrics(workloads);
+                break;
       case 4: while(successful_count<5)
               {
                   createProcessList(process_list, unsuccessful_count*2);
