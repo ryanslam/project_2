@@ -497,7 +497,7 @@ bool firstComeFirstServe(vector<process> &process_list, vector<char> &time_chart
            if(process_index<process_list.size() && process_list[process_index].arrival_time <= quanta)
            {
                process_started = true;
-               	process_list[ rocess_index].metrics.start_time = quanta;
+               	process_list[process_index].metrics.start_time = quanta;
                //updating performance metrics
                process_list[process_index].metrics.response_time = quanta - process_list[process_index].arrival_time;
            }
