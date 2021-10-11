@@ -513,7 +513,7 @@ bool firstComeFirstServe(vector<process> &process_list, vector<char> &time_chart
                // updating performance metrics
                process_list[process_index].metrics.turnaround_time = quanta+1 - process_list[process_index].arrival_time;
                process_list[process_index].metrics.waiting_time = process_list[process_index].metrics.turnaround_time - process_list[process_index].service_time;
-               process_list[process_index].metrics.end_time = quanta;
+               process_list[process_index].metrics.end_time = quanta+1;
                ++process_index;
                process_started = false;
            }
