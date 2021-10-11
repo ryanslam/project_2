@@ -465,7 +465,7 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
         else{
             time_chart.push_back('-');
             // If there is a failure due to idle, clear the post process print list.
-            anotherprocesslist.clear();
+            // anotherprocesslist.clear();
             ++current_cpu_consecutive_idle_time;
             max_cpu_consecutive_idle_time = max(max_cpu_consecutive_idle_time, current_cpu_consecutive_idle_time);
         }
@@ -475,7 +475,6 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
     // Store the total time quanta for throughput calculation.
     metric_list[0].metrics.total_quanta = timeQuanta;
     if(max_cpu_consecutive_idle_time < 2){
-        // assign metric list to workloads.
         workloads.push_back(metric_list);
     }
     // Returns whether cpu consecutive idle time exceeds 2.    
@@ -808,9 +807,10 @@ int main()
                       printTimeChart(time_chart);
                       cout << "Processes Executed: " << endl;
                       postPrintProcessList(anotherone);
-                      anotherone.clear();
+                      
                       // workloads.push_back(process_list);
                   }
+                  anotherone.clear();
               }
               calculateAndPrintPerformanceMetrics(workloads);
               break;

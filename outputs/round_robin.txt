@@ -54,7 +54,8 @@ a		92.398		1.370		    3
 x		94.721		6.420		    4
 Time Chart : [ -PPPPEPhtEPhbtuEgPhSDbYtncyuRUEgPhSDbYtncyuRUEgPhSDbYtncyuRUEPhSDbYtnyuRUEhSDbYtnuUESbYnuUESbnuUSnUnn ]
 Processes Executed: 
-Process Name	Start Time	End Time	Response Time	Service Time	Wait Time	Turnaround Time
+10
+Process Name	Start Time	End Time	Response Time	Service Time	Wait Time	Turnaround Time	
 P		1.000		61.000		1.000		9.260		51.798		61.058
 E		5.000		90.000		5.000		8.545		79.151		87.696
 h		7.000		74.000		7.000		6.320		64.182		70.502
@@ -126,7 +127,25 @@ e		92.435		4.439		    1
 o		97.675		0.622		    4
 Time Chart : [ -MMiMtZiMDOtZQGBSMgDfOtCZQBzSxMgJbDfOtCZQBSxMgJbDfOtCZQBSxMgJbDOtCQBSxMgJbOtQBxMgJbtQBxgbtQBgbgbbbb- ]
 Processes Executed: 
-Process Name	Start Time	End Time	Response Time	Service Time	Wait Time	Turnaround Time
+20
+Process Name	Start Time	End Time	Response Time	Service Time	Wait Time	Turnaround Time	
+M		1.000		79.000		1.000		9.210		70.567		79.777
+i		3.000		7.000		3.000		1.321		5.305		6.627
+t		5.000		89.000		5.000		8.510		79.382		87.892
+Z		6.000		53.000		6.000		4.537		47.104		51.641
+D		9.000		62.000		9.000		4.571		53.467		58.038
+O		10.000		74.000		10.000		5.073		64.953		70.026
+Q		13.000		90.000		13.000		7.943		76.956		84.899
+G		14.000		14.000		14.000		0.290		8.425		8.715
+B		15.000		91.000		15.000		7.333		77.606		84.939
+S		16.000		68.000		16.000		4.896		56.621		61.516
+g		18.000		94.000		18.000		8.265		78.107		86.372
+f		20.000		49.000		20.000		2.433		38.117		40.550
+C		23.000		65.000		23.000		3.221		51.545		54.765
+z		27.000		27.000		27.000		0.499		11.921		12.420
+x		29.000		86.000		29.000		5.974		64.777		70.751
+J		32.000		81.000		32.000		4.828		58.956		63.784
+b		33.000		98.000		33.000		10.085		70.278		80.363
 Simulation successful.
 Processes Name  Arrival Time    Expected Run Time   Priority
 R		0.533		4.167		    1
@@ -183,7 +202,23 @@ u		95.970		6.077		    1
 Q		98.684		3.288		    1
 Time Chart : [ -RORmWOXRmWhFOXsRTImWhAFOXpNqlRTImWAFOXpNqlTImWAFXpNqlTImWAFXpNqlTIWAFXpqlIWAFXpqlIWAFXplIWAFXlIAll- ]
 Processes Executed: 
-Process Name	Start Time	End Time	Response Time	Service Time	Wait Time	Turnaround Time
+30
+Process Name	Start Time	End Time	Response Time	Service Time	Wait Time	Turnaround Time	
+R		1.000		30.000		1.000		4.167		26.300		30.467
+O		2.000		37.000		2.000		4.342		33.120		37.461
+m		4.000		56.000		4.000		5.766		49.840		55.607
+W		5.000		90.000		5.000		9.268		79.989		89.257
+X		7.000		93.000		7.000		9.876		82.004		91.880
+h		11.000		21.000		11.000		1.901		14.690		16.592
+F		12.000		92.000		12.000		8.553		78.717		87.270
+s		15.000		15.000		15.000		0.413		8.276		8.690
+T		17.000		65.000		17.000		4.817		52.905		57.721
+I		18.000		95.000		18.000		8.332		79.151		87.484
+A		22.000		96.000		22.000		8.905		76.821		85.726
+p		26.000		87.000		26.000		6.655		66.426		73.082
+N		27.000		62.000		27.000		3.923		43.942		47.865
+q		28.000		80.000		28.000		5.014		60.703		65.717
+l		29.000		98.000		29.000		9.620		73.470		83.090
 Simulation successful.
 Processes Name  Arrival Time    Expected Run Time   Priority
 c		0.236		0.946		    3
@@ -240,7 +275,8 @@ k		94.212		1.275		    2
 U		95.897		1.849		    1
 Time Chart : [ -cEQEPYEPNYClPNiYCIslPqNiyMYxCzVIslPqNiyMYxCzVIslPqNiyMYCzVIslPNiyMYCzVIslPNiyMCzVIslPCVIsCVIsVsVsVs ]
 Processes Executed: 
-Process Name	Start Time	End Time	Response Time	Service Time	Wait Time	Turnaround Time
+40
+Process Name	Start Time	End Time	Response Time	Service Time	Wait Time	Turnaround Time	
 c		1.000		1.000		1.000		0.946		0.818		1.764
 E		2.000		7.000		2.000		2.735		3.850		6.585
 Q		3.000		3.000		3.000		0.145		2.158		2.304
@@ -314,7 +350,8 @@ X		95.566		0.103		    1
 h		96.464		4.156		    1
 Time Chart : [ -xxfxKfAZxKmfnBAZtbKmSyfMDBAZtbKmSyfMDBAZtbKmSyfMDBAZtbKmSyfMDBAZtbKmSyMDZbKmSyMDZbKmSyMDbSyMDSyMDSMM ]
 Processes Executed: 
-Process Name	Start Time	End Time	Response Time	Service Time	Wait Time	Turnaround Time
+50
+Process Name	Start Time	End Time	Response Time	Service Time	Wait Time	Turnaround Time	
 x		1.000		9.000		1.000		3.383		5.731		9.115
 f		3.000		59.000		3.000		6.213		52.022		58.235
 K		5.000		83.000		5.000		8.396		73.167		81.562
