@@ -785,11 +785,6 @@ int main()
                   else
                   {
                       ++successful_count;
-                      cout << "Simulation successful." << endl;
-                      printProcessList(process_list);
-                      printTimeChart(time_chart);
-                      cout << "Processes Executed: " << endl;
-                      postPrintProcessList(process_list);
                     //   workloads.push_back(process_list);
                   }
               }
@@ -809,11 +804,6 @@ int main()
                   else
                   {
                       ++successful_count;
-                      cout << "Simulation successful." << endl;
-                      printProcessList(process_list);
-                     printTimeChart(time_chart);
-                     cout << "Processes Executed: " << endl;
-                      postPrintProcessList(process_list);
                     //   workloads.push_back(process_list);
                   }
               }
