@@ -319,7 +319,8 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
     vector<process> metric_list;
     // Run round robin until all processes are completed or the quanta is greater than or equal 100.
     while(timeQuanta < 100 || !requestQueue.empty()){
-        //quantas++;
+
+        // Fills the queue such that the processes won't run after 100 quanta.
         while (process_index < process_list.size() && process_list[process_index].arrival_time <= timeQuanta &&
         timeQuanta < 100 && (ceil(total_service_time_left + timeQuanta) < 100)){
             total_service_time_left+=process_list[process_index].service_time;
@@ -330,12 +331,14 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
         // Reduce the service time by 1 quanta
         if(!requestQueue.empty()){
             if(!(requestQueue.front().job_started)){
+                // Assign metrics according to when processes first start.
                 (requestQueue.front()).job_start_time = timeQuanta;
                 (requestQueue.front()).metrics.start_time = timeQuanta;
                 (requestQueue.front()).metrics.response_time = timeQuanta;
                 requestQueue.front().job_started = true;
             }
-            
+
+            // Decrement the remaining service time by 1 quanta.
             (requestQueue.front()).remaining_service_time = (requestQueue.front()).remaining_service_time-1;
             time_chart.push_back(requestQueue.front().process_name);
         
@@ -355,28 +358,33 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
                 (requestQueue.front()).metrics.waiting_time = (requestQueue.front()).metrics.turnaround_time - (requestQueue.front()).service_time;
                 (requestQueue.front()).metrics.end_time = timeQuanta;
                 
-                
+                // Assigns another list to be utilized by post print list.
                 anotherprocesslist.push_back(requestQueue.front());
+
+                // Creates a vector with the updated completed metrics.
                 metric_list.push_back(requestQueue.front());
+                // Removes completed process from queue.
                 requestQueue.pop();
             }
             
         }
         else{
             time_chart.push_back('-');
+            // If there is a failure due to idle, clear the post process print list.
             anotherprocesslist.clear();
             ++current_cpu_consecutive_idle_time;
             max_cpu_consecutive_idle_time = max(max_cpu_consecutive_idle_time, current_cpu_consecutive_idle_time);
         }
         timeQuanta++;
     }
-    
+
+    // Store the total time quanta for throughput calculation.
     metric_list[0].metrics.total_quanta = timeQuanta;
     if(max_cpu_consecutive_idle_time < 2){
+        // assign metric list to workloads.
         workloads.push_back(metric_list);
     }
-    // Returns whether cpu consecutive idle time exceeds 2.
-    
+    // Returns whether cpu consecutive idle time exceeds 2.    
     return max_cpu_consecutive_idle_time < 2 ? true : false;
 }
  
