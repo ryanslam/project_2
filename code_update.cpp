@@ -319,8 +319,10 @@ bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_char
            (priority_queue[process_list[process_index].priority-1].back()).hpf_bump_timer = quanta;
             process_index++;
         }
-    
         int priority_queue_index = selectProcessForHpf(priority_queue, quanta, isPreemptive, bump_log);
+
+        //For a preemptive algoirthim, we are finishing the processes that exist in each of the queues in RR fashion
+        //which means that we may go over 100 quanta in total to finish up all the processes that we have started.
         if(quanta >= 100)
         {
             if(  priority_queue[0].size() == 0 &&
