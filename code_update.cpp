@@ -819,7 +819,6 @@ int main()
                 srand(seed);
                 createProcessList(process_list, unsuccessful_count*2);
                 time_chart.clear();
-
                 bool fcfs = firstComeFirstServe(process_list, time_chart);
                 bool sjf = shortestJobFirst(process_list, time_chart);
                 bool srt = shortestRemainingTime(process_list, time_chart);
@@ -830,6 +829,9 @@ int main()
                 
                 if(fcfs && sjf && srt && rr && hpfp && hpfnp){
                     successful_count++;
+                }
+                else{
+                    unsuccessful_count++;
                 }
                 seed++;
             }
