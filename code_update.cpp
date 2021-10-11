@@ -157,7 +157,9 @@ void printTimeChart(vector<char> &time_chart)
 {
   cout << "Time Chart : [ ";
   for(int chart_index = 0; chart_index<time_chart.size(); ++chart_index)
+  {
       cout << time_chart[chart_index];
+  }
   cout << " ]" << endl;
 }
 
@@ -202,8 +204,6 @@ void calculateAndPrintPerformanceMetrics( vector<vector<process> > &workloads, b
       avg_waiting_time += (1.0*total_waiting_time)/processes_completed;
       cout << "\tAverage Response Time : " << total_response_time/processes_completed << endl;
       avg_response_time += (1.0*total_response_time)/processes_completed;
-      cout << "\tThroughput (processes per quanta): " << processes_completed/workloads[workload_index][0].metrics.total_quanta << endl;
-      avg_throughput += processes_completed/workloads[workload_index][0].metrics.total_quanta;
       if(!isHpf)
       {
        cout << "\tThroughput (processes per quanta): " << processes_completed/workloads[workload_index][0].metrics.total_quanta << endl;
@@ -301,7 +301,10 @@ bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_char
         else
         {
             if( priority_queue[priority_queue_index][0].remaining_service_time ==  priority_queue[priority_queue_index][0].service_time)
+            {
+                priority_queue[priority_queue_index][0].metrics.start_time = quanta;
                 priority_queue[priority_queue_index][0].metrics.response_time = quanta -  priority_queue[priority_queue_index][0].arrival_time;
+            }
                 
             current_cpu_consecutive_idle_time = 0;
             priority_queue[priority_queue_index][0].remaining_service_time = max((float)0.0,priority_queue[priority_queue_index][0].remaining_service_time-1);
@@ -310,12 +313,12 @@ bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_char
             if(priority_queue[priority_queue_index][0].remaining_service_time == 0)
             {
                 // updating performance metrics
-                priority_queue[priority_queue_index][0].metrics.turnaround_time = quanta+1 - priority_queue[priority_queue_index][0].arrival_time;
-                priority_queue[priority_queue_index][0].metrics.waiting_time = priority_queue[priority_queue_index][0].metrics.turnaround_time - priority_queue[priority_queue_index][0].service_time;
-                
-                complete_process_list[priority_queue_index].push_back( priority_queue[priority_queue_index][0]);
-                
-                priority_queue[priority_queue_index].erase(priority_queue[priority_queue_index].begin());              
+               priority_queue[priority_queue_index][0].metrics.turnaround_time = quanta+1 - priority_queue[priority_queue_index][0].arrival_time;
+               priority_queue[priority_queue_index][0].metrics.waiting_time = priority_queue[priority_queue_index][0].metrics.turnaround_time - priority_queue[priority_queue_index][0].service_time;
+               priority_queue[priority_queue_index][0].metrics.end_time = quanta+1;
+               complete_process_list[priority_queue_index].push_back( priority_queue[priority_queue_index][0]);
+              
+               priority_queue[priority_queue_index].erase(priority_queue[priority_queue_index].begin());  
             }
             else if(isPreemptive)
             {
@@ -690,6 +693,8 @@ int main()
                        cout << "Simulation successful." << endl;
                        printProcessList(process_list);
                        printTimeChart(time_chart);
+                       cout << "Processes Executed: " << endl;
+                       postPrintProcessList(process_list);
                        workloads.push_back(process_list);
                    }
                }
@@ -722,7 +727,7 @@ int main()
                break;
         case 3: while(successful_count < 5)
                 {
-                    createProcessList(process_list, unsuccessful_count*2);
+                   createProcessList(process_list, unsuccessful_count*2);
                    time_chart.clear();
                    successful = shortestRemainingTime(process_list, time_chart);                  
                   
