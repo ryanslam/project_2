@@ -54,12 +54,14 @@ class process
   bool job_started;
   char process_name;
   int job_start_time;
+  float hpf_bump_timer;
   performance_metrics metrics;
   process()
   {
       arrival_time = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(99))); // will return number between 0 and 99
       service_time = 0.1 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(10)));//will return number between 0 and 10
       remaining_service_time = service_time;
+      hpf_bump_timer = arrival_time;
       job_started = false;
       priority = (rand() % 5);
       if (priority == 0)
@@ -232,9 +234,43 @@ void printHpfStats(vector<vector<process> > &complete_process_list)
        calculateAndPrintPerformanceMetrics(priority_queue_process_list, true, process_list_index);
    }
 }
- 
-int selectProcessForHpf (vector<vector<process> > &priority_queue, int quanta, bool isPreemptive)
+
+string toString(int num)
 {
+    string s;
+    while(num != 0)
+    {
+        s.push_back('0' + (num%10));
+        num/=10;
+    }
+    return s;
+}
+ 
+int selectProcessForHpf (vector<vector<process> > &priority_queue, int quanta, bool isPreemptive, vector<string> &bump_log)
+{
+   //after a process has waited for 5 quanta at a priority level, bump it up to the next higher level.
+   //queue_index = 1 because, we cannot bump the process in priority queue 1 to higher level
+   for(int queue_index = 3; queue_index >= 1;queue_index--)
+   {
+       for(int process_index = 0; process_index < priority_queue[queue_index].size(); process_index++)
+       {
+           if(priority_queue[queue_index][process_index].hpf_bump_timer+5.0 <= quanta &&
+               priority_queue[queue_index][process_index].remaining_service_time == priority_queue[queue_index][process_index].service_time)
+           {
+               string cur_log = "bumping process [";
+               cur_log.push_back(priority_queue[queue_index][process_index].process_name);
+               cur_log = cur_log + "] " + "From priority "+ toString(queue_index+1) + " to " + toString(queue_index);
+ 
+               bump_log.push_back(cur_log);
+ 
+               priority_queue[queue_index][process_index].hpf_bump_timer = quanta;
+               priority_queue[queue_index-1].push_back(priority_queue[queue_index][process_index]);
+               priority_queue[queue_index].erase(priority_queue[queue_index].begin() + process_index);
+               process_index--;
+           }
+       }
+   }
+
    if(!isPreemptive)
    {
        for(int queue_index = 0; queue_index < priority_queue.size();queue_index++)
@@ -252,7 +288,7 @@ int selectProcessForHpf (vector<vector<process> > &priority_queue, int quanta, b
                priority_queue[queue_index][0].remaining_service_time == priority_queue[queue_index][0].service_time)
                {
                    priority_queue[queue_index].erase(priority_queue[queue_index].begin());
-                   return selectProcessForHpf(priority_queue, quanta, isPreemptive);
+                   return selectProcessForHpf(priority_queue, quanta, isPreemptive, bump_log);
                }
            return queue_index;
        }
@@ -272,7 +308,7 @@ bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_char
     //float quantas = 0.0;
     vector<vector<process> >priority_queue(4);
     vector<vector<process> > complete_process_list(4);
- 
+    vector<string> bump_log;
  
     for(int quanta=0; true ; ++quanta)
     {
@@ -280,10 +316,11 @@ bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_char
         while(quanta<100 && process_index < process_list.size() && process_list[process_index].arrival_time <= quanta)
         {
             priority_queue[process_list[process_index].priority-1].push_back(process_list[process_index]);
+           (priority_queue[process_list[process_index].priority-1].back()).hpf_bump_timer = quanta;
             process_index++;
         }
     
-        int priority_queue_index = selectProcessForHpf(priority_queue, quanta, isPreemptive);
+        int priority_queue_index = selectProcessForHpf(priority_queue, quanta, isPreemptive, bump_log);
         if(quanta >= 100)
         {
             if(  priority_queue[0].size() == 0 &&
@@ -343,6 +380,11 @@ bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_char
 
        cout << "Simulation successful." << endl;
        printProcessList(process_list);
+       
+        for(int bump_log_index = 0; bump_log_index<bump_log.size(); bump_log_index++)
+        {
+            cout << bump_log[bump_log_index] << endl; 
+        }
        printTimeChart(time_chart);
  
        cout << "Processes Executed: " << endl;
@@ -656,10 +698,8 @@ int main()
   cout << "6. Highest priority first (HPF) [non-preemptive]" << endl;
   cout << "7. Run all Process Scheduling Algorithms" << endl;
  
- 
   int algorithm_selected;
   cin >> algorithm_selected;
- 
  
   vector<process> process_list;
   vector<process> anotherone;
@@ -669,9 +709,7 @@ int main()
   int seed = 0;
   bool successful = false;
  
- 
   vector<char> time_chart;
-    
  
   switch(algorithm_selected)
   {
