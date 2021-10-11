@@ -50,9 +50,6 @@ W		76.000		81.000		16.663		4.419		17.244		21.663
 L		81.000		88.000		7.843		6.893		7.950		14.843
 S		88.000		96.000		63.786		7.706		64.080		71.786
 P		96.000		100.000		1.551		3.669		1.882		5.551
-CPU IDLE
-CPU IDLE
-CPU IDLE
 Simulation successful.
 Processes Name  Arrival Time    Expected Run Time   Priority
 E		0.477		9.459		    4
@@ -113,8 +110,6 @@ F		86.000		89.000		0.982		2.889		1.093		3.982
 Z		89.000		93.000		1.802		3.481		2.322		5.802
 D		93.000		96.000		3.947		2.614		4.333		6.947
 Q		96.000		101.000		8.513		4.341		9.172		13.513
-CPU IDLE
-CPU IDLE
 Simulation successful.
 Processes Name  Arrival Time    Expected Run Time   Priority
 j		1.807		7.580		    4
