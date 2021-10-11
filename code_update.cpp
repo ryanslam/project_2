@@ -523,6 +523,7 @@ bool shortestRemainingTime(vector<process> &process_list, vector<char> &time_cha
         process_list[0].metrics.total_quanta = quanta;
         runnable.clear();
         int not_started = 0;
+        // GET LIST OF RUNNABLE PROCESSES
         for(int i = 0; i < process_list.size(); i++) {
             if(process_list[i].arrival_time <= quanta) {
                 if(process_list[i].job_started == false) {
@@ -531,17 +532,18 @@ bool shortestRemainingTime(vector<process> &process_list, vector<char> &time_cha
                 if(process_list[i].remaining_service_time > 0) {
                     runnable.push_back(i);
                 }
-                // runnable.push_back(i);
             }
             else {
                 break;
             }
         }
 
+        // IF LAST PROCESS RUNS OVER 100 QUANTA BREAK OUT WHEN IT IS DONE
         if(quanta >= 100 && not_started == runnable.size()) {
             break;
         }
 
+        // IF LIST OF RUNNABLE PROCESSES IS 0 THEN INCREMENT CONSECUTIVE_IDLES
         if(runnable.size() == 0) {
             // cout << "quanta " << quanta << ": -" << endl;
             time_chart.push_back('-');
@@ -554,6 +556,7 @@ bool shortestRemainingTime(vector<process> &process_list, vector<char> &time_cha
             consecutive_idles = 0;
             int shortest_remaining_time = INT_MAX;
             int shortest_index = -1;
+            // FIND THE RUNNABLE PROCESS THAT HAS THE SHORTEST REMAINING TIME
             for(int i = 0; i < runnable.size(); i++) {
                 int index = runnable[i];
                 if(process_list[index].remaining_service_time < shortest_remaining_time) {
@@ -562,7 +565,7 @@ bool shortestRemainingTime(vector<process> &process_list, vector<char> &time_cha
                 }
             }
 
-            // PROCESS TO RUN IS CHOSE HERE
+            // PROCESS TO RUN IS CHOSEN HERE
             process* chosen_process = &process_list[shortest_index];
             time_chart.push_back(chosen_process->process_name);
             // CHECK IF THIS IS THE FIRST TIME RUNNING THE PROCESS
@@ -572,9 +575,11 @@ bool shortestRemainingTime(vector<process> &process_list, vector<char> &time_cha
                 chosen_process->metrics.start_time = quanta;
                 chosen_process->job_started = true;
             }
+            // DECREMENT REMAINING SERVICE TIME
             chosen_process->remaining_service_time--;
             // cout << "quanta " << quanta << ": " << chosen_process->process_name << endl;
 
+            // IF CHOSEN PROCESS REMAINING SERVICE TIME IS 0 THEN THE PROCESS HAS COMPLETED
             if(chosen_process->remaining_service_time <= 0) {
                 chosen_process->metrics.end_time = quanta+1;
                 // TURNAROUND TIME = CURRENT QUANTA - ARRIVAL TIME
@@ -669,7 +674,7 @@ int main()
                 {
                     createProcessList(process_list, unsuccessful_count*2);
                    time_chart.clear();
-                   successful = shortestJobFirst(process_list, time_chart);                  
+                   successful = shortestRemainingTime(process_list, time_chart);                  
                   
                    if(!successful)
                    {
