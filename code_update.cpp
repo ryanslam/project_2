@@ -450,7 +450,7 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
                 // Update the turnaround, waiting, and end time.
                 (requestQueue.front()).metrics.turnaround_time = (timeQuanta + 1) - (requestQueue.front().arrival_time);
                 (requestQueue.front()).metrics.waiting_time = (requestQueue.front()).metrics.turnaround_time - (requestQueue.front()).service_time;
-                (requestQueue.front()).metrics.end_time = timeQuanta;
+                (requestQueue.front()).metrics.end_time = timeQuanta+1;
                 
                 // Assigns another list to be utilized by post print list.
                 anotherprocesslist.push_back(requestQueue.front());
