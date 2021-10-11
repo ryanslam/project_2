@@ -8,15 +8,17 @@
 #include <algorithm>
 #include <math.h>
 #include <climits>
-// #include <bits/stdc++.h>
 using namespace std;
- 
- 
-//Global Variables
+
+//Global Variables, in this case we want to have the first process
+//called 'A' and subsequent processes to have names that are later 
+//in the alphabet. Processes can have both lowercase and uppercase
+//letters as names.
 char next_process_name = 'A';
  
-//done
-//changed variables to float and added 0.0 to all initialized values !!!!!!!!!!!!!!!!!!!!!!!!!!!
+ //This class is contianed in every process and keeps track of the
+ //repsone time, turnaround time, waiting time, start and end times, 
+ //as well as the total quanta used on a per-process basis.
 class performance_metrics
 {
   public:
@@ -36,9 +38,12 @@ class performance_metrics
       end_time = 0.0;
   }
 };
- 
-//done
-//changed the arrival time and service time as floats !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+//This class is used for each process object. It contains randomized values for 
+//arrival time, service time, and priority. This also gives a process a unique name
+//being the next letter in the alphabet from a previous process. Also the remaning 
+//service time is set to the current service time (since the process has not executed yet)
+//and the job_started boolean is set to false (also because the process has not executed yet).
 class process
 {
   public:
@@ -63,14 +68,18 @@ class process
       next_process_name++;
   }
 };
- 
-//done
+
+//This is used to compare the arrival time for two processes, which is useful
+//if the next process to run (like in FCFS) is based on the arrival time of each 
+//of the processes. 
 bool processComparator(process p1, process p2)
 {
   return (p1.arrival_time < p2.arrival_time);
 }
- 
-//done
+
+//This function creates a new set of processes and adds them to a vector object.
+//After the set number of processes have been created, they are sorted by arrival 
+//time using the "processComparator" function.
 void createProcessList(vector<process> &process_list, int extra_processes = 0)
 {
   process_list.clear();
@@ -92,7 +101,8 @@ void createProcessList(vector<process> &process_list, int extra_processes = 0)
   sort(process_list.begin(), process_list.end(), processComparator);
 }
  
-//done, but has problems with long floats
+//This prints out all the processes that were created for a given scheduling algorithim. Remember
+//not all of these processes will run as part of a given workload.
 void printProcessList(vector<process> &process_list)
 {
    cout << setprecision(3) << fixed;
@@ -104,21 +114,25 @@ void printProcessList(vector<process> &process_list)
            << process_list[process_index].priority << endl;
 }
 
-//used for printing by start time to easily match it with time map
+//This function is used to sort the differnet processes by their starting
+//times. This is useful 
 bool postProcessComparator(process p1, process p2)
 {
   return (p1.metrics.start_time < p2.metrics.start_time);
 }
 
-//used to print the executed processes
+//This prints out all the processes that were actually executed for a given scheduling algorithim. This 
+//list will most likely be smaller than the total number of processes that were created for a given workload.
 void postPrintProcessList( vector<process> &process_list )
 {
-        //sort by start time for the exectued processes
+        //Sort by start time for the executed processes
         sort(process_list.begin(), process_list.end(), postProcessComparator);
         cout << "Process Name\t" << "Start Time\t" << "End Time\t" << "Response Time\t" 
                 << "Service Time\t" << "Wait Time\t" << "Turnaround Time\t" << endl;
         for (int i = 0; i < process_list.size(); i++ )
         {
+            //If the turnaround time for the process was 0, it means the process never
+            //finished its execution.
             if ( process_list[ i ].metrics.turnaround_time == 0)
                 continue;
             
@@ -136,8 +150,9 @@ void postPrintProcessList( vector<process> &process_list )
 
 }
 
- 
-//done
+//This prints out the time chart for each scheduling algorithim. In this case 
+//we use the name of the process that has executed for each time quanta or a '-'
+//to denote that the CPU was idle for that time quanta.
 void printTimeChart(vector<char> &time_chart)
 {
   cout << "Time Chart : [ ";
@@ -145,27 +160,21 @@ void printTimeChart(vector<char> &time_chart)
       cout << time_chart[chart_index];
   cout << " ]" << endl;
 }
- 
- 
-void calculateAndPrintPerformanceMetrics( vector<vector<process> > &workloads)
+
+//This function prints out all the performance metrics for a given workload 
+void calculateAndPrintPerformanceMetrics( vector<vector<process> > &workloads, bool isHpf = false, int priority_queue_index = -1)
 {
   // average metrics for all the workloads.
   float avg_turnaround_time = 0.0;
   float avg_response_time = 0.0;
   float avg_waiting_time = 0.0;
   float avg_throughput = 0.0;
- 
- 
   for(int workload_index = 0; workload_index < workloads.size(); ++workload_index)
   {
-     
-      //changed these variables to floats !!!!!!!!!!!!!!!!!!!!
       // for current workload
       float total_turnaround_time = 0.0;
       float total_response_time = 0.0;
       float total_waiting_time = 0.0;
- 
- 
       int processes_completed = 0;
       vector<process> &process_list = workloads[workload_index];
       for(int process_index = 0; process_index<process_list.size(); ++process_index)
@@ -177,10 +186,16 @@ void calculateAndPrintPerformanceMetrics( vector<vector<process> > &workloads)
           total_waiting_time += process_list[process_index].metrics.waiting_time;
           total_response_time += process_list[process_index].metrics.response_time;
       }
+
+      if(!isHpf)
+      {
+          cout << "Performance metrics for workload " <<  workload_index+1 << " :" << endl;
+      }
+      else
+      {
+          cout << "Performance metrics for Priority Queue " <<  priority_queue_index+1 << " :" << endl;
+      }
  
- 
-   //Changed it so you do not multiply by 1.0 for each of the total times. !!!!!!!!!!!!!!!
-      cout << "Performance metrics for workload " <<  workload_index+1 << " :" << endl;
       cout << "\tAverage Turnaround Time : " << (1.0*total_turnaround_time)/processes_completed << endl;
       avg_turnaround_time += (1.0*total_turnaround_time)/processes_completed;
       cout << "\tAverage Waiting Time : " << total_waiting_time/processes_completed << endl;
@@ -189,18 +204,34 @@ void calculateAndPrintPerformanceMetrics( vector<vector<process> > &workloads)
       avg_response_time += (1.0*total_response_time)/processes_completed;
       cout << "\tThroughput (processes per quanta): " << processes_completed/workloads[workload_index][0].metrics.total_quanta << endl;
       avg_throughput += processes_completed/workloads[workload_index][0].metrics.total_quanta;
-
+      if(!isHpf)
+      {
+       cout << "\tThroughput (processes per quanta): " << processes_completed/workloads[workload_index][0].metrics.total_quanta << endl;
+       avg_throughput += processes_completed/workloads[workload_index][0].metrics.total_quanta;
+      }
 
   }
+  if(!isHpf)
+  {
   cout << "Average Performance metrics for all workload :" << endl;
   cout << "Average Turnaround Time : " << avg_turnaround_time/workloads.size() << endl;
   cout << "Average Waiting Time : " << avg_waiting_time/workloads.size() << endl;
   cout << "Average Response Time : " << avg_response_time/workloads.size() << endl;
   cout << "Average Throughput : " << avg_throughput/workloads.size() << endl;
-
+  }
 }
- 
- 
+
+void printHpfStats(vector<vector<process> > &complete_process_list)
+{
+   for(int process_list_index=0; process_list_index<complete_process_list.size(); process_list_index++)
+   {
+       cout << "Processes executed in Priority Queue " << process_list_index+1 << endl;
+       postPrintProcessList(complete_process_list[process_list_index]);
+       vector<vector<process> > priority_queue_process_list;
+       priority_queue_process_list.push_back(complete_process_list[process_list_index]);
+       calculateAndPrintPerformanceMetrics(priority_queue_process_list, true, process_list_index);
+   }
+}
  
 int selectProcessForHpf (vector<vector<process> > &priority_queue, int quanta, bool isPreemptive)
 {
@@ -295,13 +326,30 @@ bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_char
         }
         timeQuanta = quanta;
     }
-    // cout << "test" << endl;
-    // for(int i = 0; i < complete_process_list.size()-1; i++)
-    complete_process_list[0][0].metrics.total_quanta = timeQuanta;
-    // cout << "test1" << endl;
-    if(max_cpu_consecutive_idle_time < 2){
-        workloads = complete_process_list;
-    }   
+
+    if(max_cpu_consecutive_idle_time < 2)
+    {
+        vector<process> merged_complete_process_list;
+        for(int process_list_index=0; process_list_index<complete_process_list.size(); process_list_index++)
+       {
+           for(int process_index=0; process_index<complete_process_list[process_list_index].size(); process_index++)
+           {
+               merged_complete_process_list.push_back(complete_process_list[process_list_index][process_index]);
+           }
+       }
+
+       cout << "Simulation successful." << endl;
+       printProcessList(process_list);
+       printTimeChart(time_chart);
+ 
+       cout << "Processes Executed: " << endl;
+       postPrintProcessList(merged_complete_process_list);
+ 
+       printHpfStats(complete_process_list);
+      
+       merged_complete_process_list[0].metrics.total_quanta = timeQuanta;  
+       workloads.push_back(merged_complete_process_list);
+    }
   //process_list[ 0 ].metrics.total_quanta = quantas;
   return max_cpu_consecutive_idle_time < 2 ? true : false;
 }  
@@ -439,7 +487,7 @@ bool firstComeFirstServe(vector<process> &process_list, vector<char> &time_chart
  //returns the index of a process that has arrived before the current quanta and is the shortest job
 int selectProcessForSjf( vector<process> &process_list, int quanta )
 {
-	//want to select the job that has  fthe shortest runtime
+	//want to select the job that has the shortest runtime
 	int min_index = -1;
 	float min_service_time = FLT_MAX;
 	for ( int i = 0; i < process_list.size(); i++ )
@@ -603,6 +651,7 @@ int main()
   cout << "4. Round robin (RR) [preemptive]" << endl;
   cout << "5. Highest priority first (HPF) [preemptive]" << endl;
   cout << "6. Highest priority first (HPF) [non-preemptive]" << endl;
+  cout << "7. Run all Process Scheduling Algorithms" << endl;
  
  
   int algorithm_selected;
@@ -794,5 +843,3 @@ int main()
   } 
   return 0;
 }
-
-
