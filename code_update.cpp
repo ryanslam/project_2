@@ -5,6 +5,8 @@
 #include <vector>
 #include <queue>
 #include <float.h>
+#include <algorithm>
+#include <math.h>
 // #include <bits/stdc++.h>
 using namespace std;
  
@@ -43,6 +45,7 @@ class process
   float service_time;
   float remaining_service_time;
   int priority;
+  bool job_started;
   char process_name;
   int job_start_time;
   performance_metrics metrics;
@@ -51,6 +54,7 @@ class process
       arrival_time = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(99))); // will return number between 0 and 99
       service_time = 0.1 + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/(10)));//will return number between 0 and 10
       remaining_service_time = service_time;
+      job_started = false;
       priority = (rand() % 5);
       if (priority == 0)
           priority += 1;// priority between 1 .. 4
@@ -73,7 +77,7 @@ void createProcessList(vector<process> &process_list, int extra_processes = 0)
  
   int processes_count = min(10 + extra_processes, 52); //generating 10 by default, adding extra processes if requested with the limit of maximum 52 processes.
  
-  cout << "\npopulating new processes..." << endl;
+//   cout << "\npopulating new processes..." << endl;
  
   for(int i = 0; i < processes_count; i++)
   {
@@ -176,12 +180,12 @@ void calculateAndPrintPerformanceMetrics( vector<vector<process> > &workloads)
  
    //Changed it so you do not multiply by 1.0 for each of the total times. !!!!!!!!!!!!!!!
       cout << "Performance metrics for workload " <<  workload_index+1 << " :" << endl;
-      cout << "\tAverage Turnaround Time : " << total_turnaround_time/processes_completed << endl;
-      avg_turnaround_time += total_turnaround_time/processes_completed;
+      cout << "\tAverage Turnaround Time : " << (1.0*total_turnaround_time)/processes_completed << endl;
+      avg_turnaround_time += (1.0*total_turnaround_time)/processes_completed;
       cout << "\tAverage Waiting Time : " << total_waiting_time/processes_completed << endl;
-      avg_waiting_time += total_waiting_time/processes_completed;
+      avg_waiting_time += (1.0*total_waiting_time)/processes_completed;
       cout << "\tAverage Response Time : " << total_response_time/processes_completed << endl;
-      avg_response_time += total_response_time/processes_completed;
+      avg_response_time += (1.0*total_response_time)/processes_completed;
       cout << "\tThroughput (processes per quanta): " << processes_completed/workloads[workload_index][0].metrics.total_quanta << endl;
       avg_throughput += processes_completed/workloads[workload_index][0].metrics.total_quanta;
 
@@ -228,102 +232,111 @@ int selectProcessForHpf (vector<vector<process> > &priority_queue, int quanta, b
 //done
 bool highestPriorityFirst(vector<process> &process_list, vector<char> &time_chart, bool isPreemptive, vector<vector<process> > &workloads)
 {
-   int process_index = 0;
-   float remaining_service_time = 0.0;
-   int current_cpu_consecutive_idle_time = 0;
-   int max_cpu_consecutive_idle_time = 0;
-   //float quantas = 0.0;
-   vector<vector<process> >priority_queue(4);
-   vector<vector<process> > complete_process_list(4);
+    int process_index = 0;
+    int timeQuanta = 0;
+    float remaining_service_time = 0.0;
+    int current_cpu_consecutive_idle_time = 0;
+    int max_cpu_consecutive_idle_time = 0;
+    //float quantas = 0.0;
+    vector<vector<process> >priority_queue(4);
+    vector<vector<process> > complete_process_list(4);
  
  
-   for(int quanta=0; true ; ++quanta)
-  {
-      //quantas++;
-      while(quanta<100 && process_index < process_list.size() && process_list[process_index].arrival_time <= quanta)
-      {
-          priority_queue[process_list[process_index].priority-1].push_back(process_list[process_index]);
-          process_index++;
-      }
- 
-      int priority_queue_index = selectProcessForHpf(priority_queue, quanta, isPreemptive);
-      if(quanta >= 100)
-      {
-          if(  priority_queue[0].size() == 0 &&
-               priority_queue[1].size() == 0 &&
-               priority_queue[2].size() == 0 &&
-               priority_queue[3].size() == 0 )
-               break;
-      }
-      if(priority_queue_index == -1)
-      {
-          time_chart.push_back('-');
-          ++current_cpu_consecutive_idle_time;
-          max_cpu_consecutive_idle_time = max(max_cpu_consecutive_idle_time, current_cpu_consecutive_idle_time);
-      }
-      else
-      {
-        if( priority_queue[priority_queue_index][0].remaining_service_time ==  priority_queue[priority_queue_index][0].service_time)
-            priority_queue[priority_queue_index][0].metrics.response_time = quanta -  priority_queue[priority_queue_index][0].arrival_time;
-            
-        current_cpu_consecutive_idle_time = 0;
-        priority_queue[priority_queue_index][0].remaining_service_time = max((float)0.0,priority_queue[priority_queue_index][0].remaining_service_time-1);
-        time_chart.push_back( priority_queue[priority_queue_index][0].process_name);
-        
-        if(priority_queue[priority_queue_index][0].remaining_service_time == 0)
+    for(int quanta=0; true ; ++quanta)
+    {
+        //quantas++;
+        while(quanta<100 && process_index < process_list.size() && process_list[process_index].arrival_time <= quanta)
         {
-            // updating performance metrics
-            priority_queue[priority_queue_index][0].metrics.turnaround_time = quanta+1 - priority_queue[priority_queue_index][0].arrival_time;
-            priority_queue[priority_queue_index][0].metrics.waiting_time = priority_queue[priority_queue_index][0].metrics.turnaround_time - priority_queue[priority_queue_index][0].service_time;
-            
-            complete_process_list[priority_queue_index].push_back( priority_queue[priority_queue_index][0]);
-            
-            priority_queue[priority_queue_index].erase(priority_queue[priority_queue_index].begin());              
+            priority_queue[process_list[process_index].priority-1].push_back(process_list[process_index]);
+            process_index++;
         }
-        else if(isPreemptive)
+    
+        int priority_queue_index = selectProcessForHpf(priority_queue, quanta, isPreemptive);
+        if(quanta >= 100)
         {
-            priority_queue[priority_queue_index].push_back(priority_queue[priority_queue_index][0]);
-            priority_queue[priority_queue_index].erase(priority_queue[priority_queue_index].begin());
+            if(  priority_queue[0].size() == 0 &&
+                priority_queue[1].size() == 0 &&
+                priority_queue[2].size() == 0 &&
+                priority_queue[3].size() == 0 )
+                break;
         }
-         
+        if(priority_queue_index == -1)
+        {
+            time_chart.push_back('-');
+            ++current_cpu_consecutive_idle_time;
+            max_cpu_consecutive_idle_time = max(max_cpu_consecutive_idle_time, current_cpu_consecutive_idle_time);
+        }
+        else
+        {
+            if( priority_queue[priority_queue_index][0].remaining_service_time ==  priority_queue[priority_queue_index][0].service_time)
+                priority_queue[priority_queue_index][0].metrics.response_time = quanta -  priority_queue[priority_queue_index][0].arrival_time;
+                
+            current_cpu_consecutive_idle_time = 0;
+            priority_queue[priority_queue_index][0].remaining_service_time = max((float)0.0,priority_queue[priority_queue_index][0].remaining_service_time-1);
+            time_chart.push_back( priority_queue[priority_queue_index][0].process_name);
+            
+            if(priority_queue[priority_queue_index][0].remaining_service_time == 0)
+            {
+                // updating performance metrics
+                priority_queue[priority_queue_index][0].metrics.turnaround_time = quanta+1 - priority_queue[priority_queue_index][0].arrival_time;
+                priority_queue[priority_queue_index][0].metrics.waiting_time = priority_queue[priority_queue_index][0].metrics.turnaround_time - priority_queue[priority_queue_index][0].service_time;
+                
+                complete_process_list[priority_queue_index].push_back( priority_queue[priority_queue_index][0]);
+                
+                priority_queue[priority_queue_index].erase(priority_queue[priority_queue_index].begin());              
+            }
+            else if(isPreemptive)
+            {
+                priority_queue[priority_queue_index].push_back(priority_queue[priority_queue_index][0]);
+                priority_queue[priority_queue_index].erase(priority_queue[priority_queue_index].begin());
+            }
+            
+        }
+        timeQuanta = quanta;
     }
+    // cout << "test" << endl;
+    // for(int i = 0; i < complete_process_list.size()-1; i++)
+    complete_process_list[0][0].metrics.total_quanta = timeQuanta;
+    // cout << "test1" << endl;
     if(max_cpu_consecutive_idle_time < 2){
         workloads = complete_process_list;
-    }
-  }
+    }   
   //process_list[ 0 ].metrics.total_quanta = quantas;
   return max_cpu_consecutive_idle_time < 2 ? true : false;
 }  
  
 // Round Robin Scheduling Algorithm Implementation.
-bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vector<vector<process> > &workloads){
+bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vector<vector<process> > &workloads, vector<process> &anotherprocesslist){
     int timeQuanta = 0;
     int process_index = 0;
     int current_cpu_consecutive_idle_time = 0;
     int max_cpu_consecutive_idle_time = 0;
-    //float quantas = 0.0;
+    float quantas = 0.0;
+    float total_service_time_left = 0;
+
     // Initialize queue populated with sorted process list.
     queue<process> requestQueue;
     vector<process> metric_list;
     // Run round robin until all processes are completed or the quanta is greater than or equal 100.
     while(timeQuanta < 100 || !requestQueue.empty()){
         //quantas++;
-        while (process_index < process_list.size() && process_list[process_index].arrival_time <= timeQuanta && timeQuanta < 100){
+        while (process_index < process_list.size() && process_list[process_index].arrival_time <= timeQuanta &&
+        timeQuanta < 100 && (ceil(total_service_time_left + timeQuanta) < 100)){
+            total_service_time_left+=process_list[process_index].service_time;
             requestQueue.push(process_list[process_index]);
-            (requestQueue.front()).metrics.response_time = timeQuanta - (requestQueue.front()).arrival_time;
             process_index++;
         }
         // If there are still processes, run the processes and update the values.
-        if(!requestQueue.empty()){
-            if((requestQueue.front()).remaining_service_time == (requestQueue.front()).service_time){
-                (requestQueue.front()).job_start_time = timeQuanta;    
-                (requestQueue.front()).metrics.start_time = timeQuanta;  
-            }
-        }
-        
         // Reduce the service time by 1 quanta
         if(!requestQueue.empty()){
-            (requestQueue.front()).remaining_service_time = max((float)0, (requestQueue.front()).remaining_service_time-1);
+            if(!(requestQueue.front().job_started)){
+                (requestQueue.front()).job_start_time = timeQuanta;
+                (requestQueue.front()).metrics.start_time = timeQuanta;
+                (requestQueue.front()).metrics.response_time = timeQuanta;
+                requestQueue.front().job_started = true;
+            }
+            
+            (requestQueue.front()).remaining_service_time = (requestQueue.front()).remaining_service_time-1;
             time_chart.push_back(requestQueue.front().process_name);
         
         
@@ -337,25 +350,28 @@ bool runRoundRobin(vector<process> &process_list, vector<char> &time_chart, vect
                 current_cpu_consecutive_idle_time = 0;
             }
             else{
-                // Update the turnaround and waiting time.
-                //   cout << (requestQueue.front().job_start_time) << endl;
-                (requestQueue.front()).metrics.total_quanta = timeQuanta;
-                (requestQueue.front()).metrics.turnaround_time = timeQuanta - (requestQueue.front().job_start_time);
+                // Update the turnaround, waiting, and end time.
+                (requestQueue.front()).metrics.turnaround_time = (timeQuanta + 1) - (requestQueue.front().arrival_time);
                 (requestQueue.front()).metrics.waiting_time = (requestQueue.front()).metrics.turnaround_time - (requestQueue.front()).service_time;
                 (requestQueue.front()).metrics.end_time = timeQuanta;
+                
+                
+                anotherprocesslist.push_back(requestQueue.front());
                 metric_list.push_back(requestQueue.front());
                 requestQueue.pop();
             }
+            
         }
         else{
             time_chart.push_back('-');
+            anotherprocesslist.clear();
             ++current_cpu_consecutive_idle_time;
             max_cpu_consecutive_idle_time = max(max_cpu_consecutive_idle_time, current_cpu_consecutive_idle_time);
         }
         timeQuanta++;
     }
     
-    
+    metric_list[0].metrics.total_quanta = timeQuanta;
     if(max_cpu_consecutive_idle_time < 2){
         workloads.push_back(metric_list);
     }
@@ -414,7 +430,7 @@ bool firstComeFirstServe(vector<process> &process_list, vector<char> &time_chart
  //returns the index of a process that has arrived before the current quanta and is the shortest job
 int selectProcessForSjf( vector<process> &process_list, int quanta )
 {
-	//want to select the job that has the shortest runtime
+	//want to select the job that has  fthe shortest runtime
 	int min_index = -1;
 	float min_service_time = FLT_MAX;
 	for ( int i = 0; i < process_list.size(); i++ )
@@ -481,7 +497,7 @@ bool shortestJobFirst( vector<process> &process_list, vector<char> &time_chart )
 			if ( cpu_idle_time > 2 )
 			{
 				//end execution if there is more than 2 consecutive cpu idle quanta
-				cout << "CPU IDLE" << endl;
+				// cout << "CPU IDLE" << endl;
 				return false;
 			}
 		}
@@ -506,6 +522,7 @@ int main()
  
  
   vector<process> process_list;
+  vector<process> anotherone;
   vector<vector<process> > workloads;
   int unsuccessful_count = 0;
   int successful_count = 0;
@@ -525,8 +542,8 @@ int main()
                   
                    if(!successful)
                    {
-                       cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
-                       printTimeChart(time_chart);
+                    //    cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
+                    //    printTimeChart(time_chart);
                        ++unsuccessful_count;
                    }
                    else
@@ -548,8 +565,8 @@ int main()
                   
                    if(!successful)
                    {
-                       cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
-                       printTimeChart(time_chart);
+                    //    cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
+                    //    printTimeChart(time_chart);
                        ++unsuccessful_count;
                    }
                    else
@@ -569,12 +586,12 @@ int main()
               {
                   createProcessList(process_list, unsuccessful_count*2);
                   time_chart.clear();
-                  successful = runRoundRobin(process_list, time_chart, workloads);                 
+                  successful = runRoundRobin(process_list, time_chart, workloads, anotherone);                 
                 
                   if(!successful)
                   {
-                      cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
-                      printTimeChart(time_chart);
+                    //   cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
+                    //   printTimeChart(time_chart);
                       ++unsuccessful_count;
                   }
                   else
@@ -583,6 +600,9 @@ int main()
                       cout << "Simulation successful." << endl;
                       printProcessList(process_list);
                       printTimeChart(time_chart);
+                      cout << "Processes Executed: " << endl;
+                      postPrintProcessList(anotherone);
+                      anotherone.clear();
                       // workloads.push_back(process_list);
                   }
               }
@@ -595,8 +615,8 @@ int main()
                   successful = highestPriorityFirst(process_list, time_chart, true, workloads);                 
                   if(!successful)
                   {
-                      cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
-                      printTimeChart(time_chart);
+                    //   cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
+                    //   printTimeChart(time_chart);
                       ++unsuccessful_count;
                   }
                   else
@@ -605,6 +625,8 @@ int main()
                       cout << "Simulation successful." << endl;
                       printProcessList(process_list);
                       printTimeChart(time_chart);
+                      cout << "Processes Executed: " << endl;
+                      postPrintProcessList(process_list);
                     //   workloads.push_back(process_list);
                   }
               }
@@ -617,8 +639,8 @@ int main()
                   successful = highestPriorityFirst(process_list, time_chart, false, workloads);                 
                   if(!successful)
                   {
-                      cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
-                      printTimeChart(time_chart);
+                    //   cout << "Simulation failed because CPU is idle for more than 2 consecutive quanta." << endl;
+                    //   printTimeChart(time_chart);
                    ++unsuccessful_count;
                   }
                   else
@@ -627,6 +649,8 @@ int main()
                       cout << "Simulation successful." << endl;
                       printProcessList(process_list);
                      printTimeChart(time_chart);
+                     cout << "Processes Executed: " << endl;
+                      postPrintProcessList(process_list);
                     //   workloads.push_back(process_list);
                   }
               }
