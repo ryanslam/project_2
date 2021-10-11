@@ -614,11 +614,12 @@ int main()
   vector<vector<process> > workloads;
   int unsuccessful_count = 0;
   int successful_count = 0;
+  int seed = 0;
   bool successful = false;
  
  
   vector<char> time_chart;
- 
+    
  
   switch(algorithm_selected)
   {
@@ -769,6 +770,26 @@ int main()
               }
               calculateAndPrintPerformanceMetrics(workloads);
               break;
+        case 7:
+            while(successful_count < 5){
+                srand(seed);
+                createProcessList(process_list, unsuccessful_count*2);
+                time_chart.clear();
+
+                bool fcfs = firstComeFirstServe(process_list, time_chart);
+                bool sjf = shortestJobFirst(process_list, time_chart);
+                bool srt = shortestRemainingTime(process_list, time_chart);
+                bool rr = runRoundRobin(process_list, time_chart, workloads, anotherone);
+                bool hpfp = highestPriorityFirst(process_list, time_chart, true, workloads); 
+                bool hpfnp = highestPriorityFirst(process_list, time_chart, false, workloads); 
+                
+                
+                if(fcfs && sjf && srt && rr && hpfp && hpfnp){
+                    successful_count++;
+                }
+                seed++;
+            }
+            break;
       default : cout << "Invalid Input" << endl;
   } 
   return 0;
